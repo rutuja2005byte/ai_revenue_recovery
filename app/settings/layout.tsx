@@ -5,7 +5,7 @@ import LogoutButton from '@/components/LogoutButton'
 import AlertsDropdown from '@/components/AlertsDropdown'
 import { Cog6ToothIcon } from '@heroicons/react/24/outline'
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <AlertsDropdown />
           <Link
             href="/settings"
-            className="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
+            className="p-1.5 text-indigo-600 bg-indigo-50 rounded-lg transition-colors flex items-center justify-center"
             title="Settings"
           >
             <Cog6ToothIcon className="w-5 h-5" />
