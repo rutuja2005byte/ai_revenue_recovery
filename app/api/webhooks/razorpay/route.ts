@@ -101,9 +101,12 @@ export async function POST(req: Request) {
 
   const supabase = getServiceClient()
 
-  // Determine user_id to associate with this webhook payment
-  let userId = process.env.RAZORPAY_TEST_USER_ID
-  if (!userId || userId === 'your_test_user_id') {
+  // Determine user_id to associate with this webhook payment (prefer notes.user_id from generated test orders)
+  let userId =
+    paymentEntity.notes?.user_id ||
+    (process.env.RAZORPAY_TEST_USER_ID !== 'your_test_user_id' ? process.env.RAZORPAY_TEST_USER_ID : null)
+
+  if (!userId) {
     // Fallback to the first existing user in failed_payments if test user id not configured yet
     const { data: sample } = await supabase
       .from('failed_payments')
