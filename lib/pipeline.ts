@@ -12,6 +12,7 @@ export interface PaymentRecord {
   attempt_count: number
   status: string
   next_retry_at?: string | null
+  razorpay_payment_id?: string | null
   created_at?: string
 }
 
