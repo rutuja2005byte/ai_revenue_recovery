@@ -88,7 +88,6 @@ export default function Dashboard() {
   const filtered = payments.filter((p) => filter === 'all' || p.status === filter)
 
   return (
-  return (
     <div className="max-w-6xl mx-auto px-8 py-12 space-y-12">
       {/* Actions */}
       <div className="flex gap-4">

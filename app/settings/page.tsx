@@ -111,7 +111,6 @@ export default function SettingsPage() {
   }
 
   return (
-  return (
     <div className="max-w-4xl mx-auto px-8 py-12 space-y-10">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Business Settings</h1>
@@ -288,7 +287,5 @@ export default function SettingsPage() {
         </div>
       </form>
     </div>
-  )
-}
   )
 }

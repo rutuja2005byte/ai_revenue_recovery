@@ -130,22 +130,22 @@ export default function AlertsDropdown() {
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none flex items-center justify-center"
+        className="relative p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors focus:outline-none flex items-center justify-center"
         aria-label="Alerts"
       >
         <BellIcon className="w-5 h-5 text-gray-600" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 py-3 z-50">
-          <div className="flex items-center justify-between px-4 pb-2.5 border-b border-gray-100">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 py-3.5 z-50">
+          <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm text-gray-900">Alerts</span>
+              <span className="font-semibold text-base text-gray-900">Alerts</span>
               {unreadCount > 0 && (
-                <span className="text-xs bg-red-50 text-red-600 font-medium px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-red-50 text-red-600 font-medium px-2.5 py-0.5 rounded-full">
                   {unreadCount} unread
                 </span>
               )}
@@ -153,16 +153,16 @@ export default function AlertsDropdown() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
               >
                 Mark all as read
               </button>
             )}
           </div>
 
-          <div className="max-h-[380px] overflow-y-auto divide-y divide-gray-50">
+          <div className="max-h-[400px] overflow-y-auto divide-y divide-gray-50">
             {alerts.length === 0 ? (
-              <div className="py-8 text-center text-xs text-gray-400">
+              <div className="py-10 text-center text-sm text-gray-400">
                 No alerts yet
               </div>
             ) : (
@@ -170,19 +170,19 @@ export default function AlertsDropdown() {
                 <div
                   key={alert.id}
                   onClick={() => markAsRead(alert.id)}
-                  className={`p-3.5 border-l-4 cursor-pointer transition-colors hover:bg-gray-50 ${getBorderColor(
+                  className={`p-4 border-l-4 cursor-pointer transition-colors hover:bg-gray-50 ${getBorderColor(
                     alert.type
                   )} ${alert.read ? 'bg-white opacity-60' : 'bg-gray-50/40'}`}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                       {alert.type}
                     </span>
-                    <span className="text-[11px] text-gray-400">
+                    <span className="text-xs text-gray-400">
                       {formatTimestamp(alert.created_at)}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-800 leading-snug">
+                  <p className="text-sm text-gray-800 leading-snug">
                     {alert.message}
                   </p>
                 </div>

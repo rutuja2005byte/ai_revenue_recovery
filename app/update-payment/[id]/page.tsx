@@ -12,14 +12,18 @@ export default function UpdatePayment() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="max-w-sm text-center space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="max-w-md w-full text-center space-y-6 p-6">
         {done ? (
-          <p className="text-green-700">Payment method updated. Thank you!</p>
+          <p className="text-green-700 text-lg font-medium">Payment method updated. Thank you!</p>
         ) : (
           <>
-            <h1 className="text-xl font-semibold">Update payment method</h1>
-            <button onClick={handleUpdate} className="bg-indigo-600 text-white rounded-xl px-6 py-3">
+            <h1 className="text-2xl font-semibold text-gray-900">Update payment method</h1>
+            <p className="text-base text-gray-500">Please confirm to authorize using your updated card details.</p>
+            <button
+              onClick={handleUpdate}
+              className="w-full bg-indigo-600 text-white rounded-xl px-7 py-3.5 text-base font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+            >
               Confirm update (demo)
             </button>
           </>
