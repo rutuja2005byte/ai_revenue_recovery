@@ -60,6 +60,9 @@ export default function Dashboard() {
     setLoading(true)
     await fetch('/api/batch/run', { method: 'POST' })
     await loadData()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('alerts-updated'))
+    }
     setLoading(false)
   }
 

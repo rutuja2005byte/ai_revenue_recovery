@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import LogoutButton from '@/components/LogoutButton'
+import AlertsDropdown from '@/components/AlertsDropdown'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -13,6 +14,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <span className="font-semibold">Revenue Recovery</span>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-500">{user.email}</span>
+          <AlertsDropdown />
           <LogoutButton />
         </div>
       </header>

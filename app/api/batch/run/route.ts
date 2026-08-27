@@ -19,6 +19,12 @@ export async function POST() {
 
   let recovered = 0, escalated = 0, stopped = 0
   const processedPayments: OwnerPaymentDetail[] = []
+  const alertsToInsert: Array<{
+    user_id: string
+    message: string
+    type: 'info' | 'warning' | 'critical'
+    read: boolean
+  }> = []
 
   for (const payment of payments) {
     // STEP 1: DIAGNOSE
@@ -51,9 +57,23 @@ export async function POST() {
     } else if (decision.action === 'escalate') {
       outcome = 'pending'
       escalated++
+      alertsToInsert.push({
+        user_id: user.id,
+        message: `Payment of ₹${Number(payment.amount).toLocaleString()} for ${payment.customer_name} was escalated.`,
+        type: 'warning',
+        read: false,
+      })
     } else if (decision.action === 'stop') {
       outcome = 'success'
       stopped++
+      if (payment.failure_reason === 'fraud_flagged') {
+        alertsToInsert.push({
+          user_id: user.id,
+          message: `Payment of ₹${Number(payment.amount).toLocaleString()} for ${payment.customer_name} stopped due to fraud detection.`,
+          type: 'critical',
+          read: false,
+        })
+      }
     } else if (decision.action === 'schedule_retry') {
       outcome = 'pending'
     }
@@ -75,6 +95,20 @@ export async function POST() {
       status: newStatus,
       attempt_count: newAttemptCount,
     }).eq('id', payment.id)
+  }
+
+  alertsToInsert.push({
+    user_id: user.id,
+    message: `Batch complete: ${recovered} recovered, ${escalated} escalated, ${stopped} stopped`,
+    type: 'info',
+    read: false,
+  })
+
+  if (alertsToInsert.length > 0) {
+    const { error: alertError } = await supabase.from('alerts').insert(alertsToInsert)
+    if (alertError) {
+      console.error('Failed to insert alerts:', alertError.message)
+    }
   }
 
   if (user.email && payments.length > 0) {
