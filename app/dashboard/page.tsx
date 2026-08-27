@@ -16,6 +16,7 @@ type Payment = {
   failure_reason: string
   attempt_count: number
   status: string
+  next_retry_at?: string | null
   created_at: string
 }
 
@@ -156,6 +157,11 @@ export default function Dashboard() {
               <td className="py-4 text-gray-500">{p.attempt_count}</td>
               <td className="py-4">
                 <StatusPill status={p.status} />
+                {p.status === 'pending' && p.next_retry_at && (
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Retry scheduled: {new Date(p.next_retry_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                  </p>
+                )}
               </td>
             </tr>
           ))}
