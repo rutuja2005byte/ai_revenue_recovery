@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { diagnosePayment } from '@/lib/claude'
+import { diagnosePayment } from '@/lib/groq'
 import { decideAction, simulateRetry } from '@/lib/rules'
-import { sendRecoveryEmail } from '@/lib/email'
+import { sendRecoveryEmail, sendOwnerNotification, OwnerPaymentDetail } from '@/lib/email'
 import { NextResponse } from 'next/server'
 
 export async function POST() {
@@ -18,6 +18,7 @@ export async function POST() {
   if (!payments) return NextResponse.json({ error: 'no payments' }, { status: 400 })
 
   let recovered = 0, escalated = 0, stopped = 0
+  const processedPayments: OwnerPaymentDetail[] = []
 
   for (const payment of payments) {
     // STEP 1: DIAGNOSE
@@ -57,6 +58,14 @@ export async function POST() {
       outcome = 'pending'
     }
 
+    processedPayments.push({
+      customer_name: payment.customer_name,
+      amount: payment.amount,
+      failure_reason: payment.failure_reason,
+      action_taken: decision.action,
+      outcome,
+    })
+
     await supabase.from('recovery_log').insert({
       payment_id: payment.id, user_id: user.id, step: 'act',
       action_taken: decision.action, outcome,
@@ -66,6 +75,16 @@ export async function POST() {
       status: newStatus,
       attempt_count: newAttemptCount,
     }).eq('id', payment.id)
+  }
+
+  if (user.email && payments.length > 0) {
+    await sendOwnerNotification(user.email, {
+      total: payments.length,
+      recovered,
+      escalated,
+      stopped,
+      payments: processedPayments,
+    })
   }
 
   return NextResponse.json({ total: payments.length, recovered, escalated, stopped })
