@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { processPayment } from '@/lib/pipeline'
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
 
@@ -141,20 +142,24 @@ export async function POST(req: Request) {
     paymentEntity.error_reason
   )
 
-  const { data, error } = await supabase.from('failed_payments').insert({
-    user_id: userId,
-    customer_name: customerName,
-    customer_email: customerEmail,
-    amount: amountInRupees,
-    failure_reason: failureReason,
-    attempt_count: 0,
-    status: 'pending',
-    razorpay_payment_id: paymentEntity.id,
-  })
+  const { data: insertedPayment, error } = await supabase
+    .from('failed_payments')
+    .insert({
+      user_id: userId,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      amount: amountInRupees,
+      failure_reason: failureReason,
+      attempt_count: 0,
+      status: 'pending',
+      razorpay_payment_id: paymentEntity.id,
+    })
+    .select()
+    .single()
 
-  if (error) {
+  if (error || !insertedPayment) {
     console.error('Error inserting failed payment from Razorpay webhook:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: error?.message || 'Insert failed' }, { status: 500 })
   }
 
   // Create an in-app alert for the newly detected failed payment
@@ -170,5 +175,25 @@ export async function POST(req: Request) {
     console.error('Error creating alert for Razorpay failed payment:', alertError.message)
   }
 
-  return NextResponse.json({ success: true, payment_id: paymentEntity.id })
+  // Immediately run the automated recovery pipeline on this newly failed payment
+  try {
+    const recoveryResult = await processPayment(supabase, insertedPayment, userId)
+    return NextResponse.json({
+      success: true,
+      payment_id: paymentEntity.id,
+      auto_recovery: {
+        diagnosis: recoveryResult.diagnosis,
+        decision: recoveryResult.decision,
+        outcome: recoveryResult.outcome,
+        new_status: recoveryResult.newStatus,
+      },
+    })
+  } catch (pipelineError: any) {
+    console.error('Error running automatic recovery pipeline on webhook payment:', pipelineError)
+    return NextResponse.json({
+      success: true,
+      payment_id: paymentEntity.id,
+      auto_recovery_error: pipelineError?.message || 'Pipeline execution failed',
+    })
+  }
 }

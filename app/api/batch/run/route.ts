@@ -18,34 +18,23 @@ export async function POST() {
 
   let recovered = 0, escalated = 0, stopped = 0
   const processedPayments: OwnerPaymentDetail[] = []
-  const alertsToInsert: Array<{
-    user_id: string
-    message: string
-    type: 'info' | 'warning' | 'critical'
-    read: boolean
-  }> = []
-
   for (const payment of payments) {
-    const result = await processPayment(supabase, payment)
+    const result = await processPayment(supabase, payment, user.id)
     if (result.isRecovered) recovered++
     if (result.isEscalated) escalated++
     if (result.isStopped) stopped++
     processedPayments.push(result.ownerDetail)
-    if (result.alert) alertsToInsert.push(result.alert)
   }
 
-  alertsToInsert.push({
+  // Insert single batch completion summary alert
+  const { error: alertError } = await supabase.from('alerts').insert({
     user_id: user.id,
     message: `Batch complete: ${recovered} recovered, ${escalated} escalated, ${stopped} stopped`,
     type: 'info',
     read: false,
   })
-
-  if (alertsToInsert.length > 0) {
-    const { error: alertError } = await supabase.from('alerts').insert(alertsToInsert)
-    if (alertError) {
-      console.error('Failed to insert alerts:', alertError.message)
-    }
+  if (alertError) {
+    console.error('Failed to insert batch completion alert:', alertError.message)
   }
 
   if (user.email && payments.length > 0) {

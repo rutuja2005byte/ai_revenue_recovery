@@ -31,26 +31,12 @@ async function handleScheduledBatch() {
   }
 
   let recovered = 0, escalated = 0, stopped = 0
-  const alertsToInsert: Array<{
-    user_id: string
-    message: string
-    type: 'info' | 'warning' | 'critical'
-    read: boolean
-  }> = []
 
   for (const payment of payments) {
     const result = await processPayment(supabase, payment)
     if (result.isRecovered) recovered++
     if (result.isEscalated) escalated++
     if (result.isStopped) stopped++
-    if (result.alert) alertsToInsert.push(result.alert)
-  }
-
-  if (alertsToInsert.length > 0) {
-    const { error: alertError } = await supabase.from('alerts').insert(alertsToInsert)
-    if (alertError) {
-      console.error('Failed to insert alerts for scheduled batch:', alertError.message)
-    }
   }
 
   return NextResponse.json({
