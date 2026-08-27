@@ -11,7 +11,7 @@ export async function diagnosePayment(payment: {
         'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: "openai/gpt-oss-20b",
         messages: [{
           role: 'user',
           content: `A payment failed. Reason: ${payment.failure_reason}. Amount: ₹${payment.amount}. 

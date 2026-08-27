@@ -7,7 +7,7 @@ export async function sendRecoveryEmail(paymentId: string, name: string, email: 
 
   const { data, error } = await resend.emails.send({
     from: 'onboarding@resend.dev', // use your verified domain later
-    to: email,
+    to: 'rutujadarade2005@gmail.com',
     subject: 'Action needed: update your payment method',
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
