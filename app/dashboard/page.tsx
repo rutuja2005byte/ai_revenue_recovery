@@ -88,7 +88,7 @@ export default function Dashboard() {
   const filtered = payments.filter((p) => filter === 'all' || p.status === filter)
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-12 space-y-12">
+    <div className="max-w-6xl mx-auto px-8 py-10 space-y-10">
       {/* Actions */}
       <div className="flex gap-4">
         <button
@@ -117,13 +117,15 @@ export default function Dashboard() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-8 border-b border-gray-100 pb-3.5">
+      <div className="flex gap-8 border-b border-gray-200">
         {['all', 'pending', 'recovered', 'escalated', 'stopped'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`text-base capitalize pb-2.5 border-b-2 -mb-4 transition-colors ${
-              filter === f ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'
+            className={`text-base capitalize pb-3.5 border-b-2 -mb-px transition-colors ${
+              filter === f
+                ? 'border-indigo-600 text-indigo-600 font-semibold'
+                : 'border-transparent text-gray-400 hover:text-gray-700'
             }`}
           >
             {f}
@@ -132,45 +134,53 @@ export default function Dashboard() {
       </div>
 
       {/* Table */}
-      <table className="w-full text-base">
-        <thead>
-          <tr className="text-gray-500 text-sm uppercase tracking-wide">
-            <th className="text-left py-3 font-medium">Customer</th>
-            <th className="text-left py-3 font-medium">Amount</th>
-            <th className="text-left py-3 font-medium">Reason</th>
-            <th className="text-left py-3 font-medium">Attempts</th>
-            <th className="text-left py-3 font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((p) => (
-            <tr
-              key={p.id}
-              onClick={() => openDetail(p)}
-              className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
-            >
-              <td className="py-5">
-                <div className="font-medium text-gray-900">{p.customer_name}</div>
-                <div className="text-gray-400 text-sm">{p.customer_email}</div>
-              </td>
-              <td className="py-5 font-medium text-gray-900">₹{Number(p.amount).toLocaleString()}</td>
-              <td className="py-5 text-gray-500 capitalize">{p.failure_reason.replace(/_/g, ' ')}</td>
-              <td className="py-5 text-gray-500">{p.attempt_count}</td>
-              <td className="py-5">
-                <StatusPill status={p.status} />
-                {p.status === 'pending' && p.next_retry_at && (
-                  <p className="text-xs text-gray-400 mt-1.5">
-                    Retry scheduled: {new Date(p.next_retry_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                  </p>
-                )}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-base text-left border-collapse">
+          <thead>
+            <tr className="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider font-semibold">
+              <th className="py-3.5 pr-6 font-semibold w-[28%]">Customer</th>
+              <th className="py-3.5 px-4 font-semibold w-[18%]">Amount</th>
+              <th className="py-3.5 px-4 font-semibold w-[22%]">Reason</th>
+              <th className="py-3.5 px-4 font-semibold w-[14%]">Attempts</th>
+              <th className="py-3.5 pl-4 font-semibold w-[18%]">Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {filtered.map((p) => (
+              <tr
+                key={p.id}
+                onClick={() => openDetail(p)}
+                className="hover:bg-gray-50/80 cursor-pointer transition-colors"
+              >
+                <td className="py-4 pr-6 align-middle">
+                  <div className="font-medium text-gray-900">{p.customer_name}</div>
+                  <div className="text-gray-400 text-sm">{p.customer_email}</div>
+                </td>
+                <td className="py-4 px-4 align-middle font-semibold text-gray-900">
+                  ₹{Number(p.amount).toLocaleString()}
+                </td>
+                <td className="py-4 px-4 align-middle text-gray-600 capitalize">
+                  {p.failure_reason.replace(/_/g, ' ')}
+                </td>
+                <td className="py-4 px-4 align-middle text-gray-600">
+                  {p.attempt_count}
+                </td>
+                <td className="py-4 pl-4 align-middle">
+                  <StatusPill status={p.status} />
+                  {p.status === 'pending' && p.next_retry_at && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Retry scheduled: {new Date(p.next_retry_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                    </p>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {filtered.length === 0 && (
-        <p className="text-center text-gray-400 py-20 text-base">No records yet — load sample payments to begin.</p>
+        <p className="text-center text-gray-400 py-16 text-base">No records yet — load sample payments to begin.</p>
       )}
 
       {/* Detail modal */}
@@ -189,13 +199,13 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-4 pt-2">
-              <p className="text-sm uppercase tracking-wide text-gray-400 font-medium">Audit trail</p>
+              <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Audit trail</p>
               {logs.map((log) => (
                 <div key={log.id} className="border-l-2 border-gray-100 pl-4 py-1.5">
-                  <p className="text-sm text-gray-400">{new Date(log.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">{new Date(log.created_at).toLocaleString()}</p>
                   <p className="text-base font-medium capitalize text-gray-900 mt-0.5">{log.step}{log.action_taken ? ` → ${log.action_taken.replace(/_/g, ' ')}` : ''}</p>
                   {log.ai_reasoning && <p className="text-base text-gray-600 mt-1">{log.ai_reasoning}</p>}
-                  {log.outcome && <p className="text-sm text-gray-400 mt-1">outcome: {log.outcome}</p>}
+                  {log.outcome && <p className="text-xs text-gray-400 mt-1">outcome: {log.outcome}</p>}
                 </div>
               ))}
               {logs.length === 0 && <p className="text-base text-gray-400">No actions taken yet.</p>}
@@ -213,9 +223,11 @@ export default function Dashboard() {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white shadow-sm rounded-2xl p-7 border border-gray-100/80">
-      <p className="text-4xl font-bold text-gray-900 tracking-tight">{value}</p>
-      <p className="text-sm uppercase tracking-wide text-gray-500 mt-2 font-medium">{label}</p>
+    <div className="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 min-w-0 flex flex-col justify-between">
+      <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight truncate" title={String(value)}>
+        {value}
+      </p>
+      <p className="text-xs uppercase tracking-wider text-gray-500 mt-2 font-medium">{label}</p>
     </div>
   )
 }
@@ -232,7 +244,7 @@ function StatusPill({ status }: { status: string }) {
 
   return (
     <span className={`inline-flex items-center gap-1.5 ${c.bg} ${c.text} text-sm font-medium px-3.5 py-1.5 rounded-full`}>
-      <Icon className="w-4 h-4" />
+      <Icon className="w-4 h-4 shrink-0" />
       {c.label}
     </span>
   )
