@@ -1,6 +1,7 @@
 import { diagnosePayment } from '@/lib/groq'
 import { decideAction, simulateRetry } from '@/lib/rules'
 import { sendRecoveryEmail, OwnerPaymentDetail } from '@/lib/email'
+import { razorpay } from '@/lib/razorpay'
 
 export interface PaymentRecord {
   id: string
@@ -71,12 +72,39 @@ export async function processPayment(
   let isEscalated = false
   let isStopped = false
   let alert: ProcessPaymentResult['alert'] = null
+  let actReasoning: string | null = null
 
   if (decision.action === 'retry') {
-    const success = simulateRetry()
-    outcome = success ? 'success' : 'failed'
-    newStatus = success ? 'recovered' : 'pending'
-    if (success) isRecovered = true
+    if (payment.razorpay_payment_id) {
+      try {
+        const rzpPayment = (await razorpay.payments.fetch(payment.razorpay_payment_id)) as any
+        if (rzpPayment.status === 'captured' || rzpPayment.status === 'authorized') {
+          outcome = 'success'
+          newStatus = 'recovered'
+          isRecovered = true
+          actReasoning = `Razorpay API check (${payment.razorpay_payment_id}): payment status is ${rzpPayment.status} → recovered`
+        } else {
+          // In Razorpay test mode, simulate retry outcome based on current attempt
+          const success = simulateRetry()
+          outcome = success ? 'success' : 'failed'
+          newStatus = success ? 'recovered' : 'pending'
+          if (success) isRecovered = true
+          actReasoning = `Razorpay API check (${payment.razorpay_payment_id}): status is ${rzpPayment.status}, test retry ${success ? 'succeeded' : 'failed'}`
+        }
+      } catch (err: any) {
+        const success = simulateRetry()
+        outcome = success ? 'success' : 'failed'
+        newStatus = success ? 'recovered' : 'pending'
+        if (success) isRecovered = true
+        actReasoning = `Razorpay API check fallback (${payment.razorpay_payment_id}): ${err?.message || 'fetch error'}, simulated retry: ${outcome}`
+      }
+    } else {
+      const success = simulateRetry()
+      outcome = success ? 'success' : 'failed'
+      newStatus = success ? 'recovered' : 'pending'
+      if (success) isRecovered = true
+      actReasoning = 'Simulated retry (60% demo rate for mock data)'
+    }
   } else if (decision.action === 'send_email') {
     const result = await sendRecoveryEmail(
       payment.id,
@@ -85,9 +113,11 @@ export async function processPayment(
       payment.amount
     )
     outcome = result.success ? 'success' : 'failed'
+    actReasoning = result.success ? 'Customer recovery email sent via Resend' : 'Failed to send recovery email'
   } else if (decision.action === 'escalate') {
     outcome = 'pending'
     isEscalated = true
+    actReasoning = `Escalated: ${decision.ruleApplied}`
     alert = {
       user_id: payment.user_id,
       message: `Payment of ₹${Number(payment.amount).toLocaleString()} for ${payment.customer_name} was escalated.`,
@@ -97,6 +127,7 @@ export async function processPayment(
   } else if (decision.action === 'stop') {
     outcome = 'success'
     isStopped = true
+    actReasoning = `Stopped: ${decision.ruleApplied}`
     if (payment.failure_reason === 'fraud_flagged') {
       alert = {
         user_id: payment.user_id,
@@ -109,12 +140,14 @@ export async function processPayment(
     outcome = 'pending'
     // set next_retry_at to now + 24 hours
     nextRetryAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    actReasoning = `Retry scheduled for ${new Date(nextRetryAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
   }
 
   await supabase.from('recovery_log').insert({
     payment_id: payment.id,
     user_id: payment.user_id,
     step: 'act',
+    ai_reasoning: actReasoning,
     action_taken: decision.action,
     outcome,
   })

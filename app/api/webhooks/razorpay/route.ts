@@ -154,5 +154,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // Create an in-app alert for the newly detected failed payment
+  const alertMessage = `New failed payment detected: ${customerName} - ₹${amountInRupees.toLocaleString()}`
+  const { error: alertError } = await supabase.from('alerts').insert({
+    user_id: userId,
+    message: alertMessage,
+    type: 'info',
+    read: false,
+  })
+
+  if (alertError) {
+    console.error('Error creating alert for Razorpay failed payment:', alertError.message)
+  }
+
   return NextResponse.json({ success: true, payment_id: paymentEntity.id })
 }
