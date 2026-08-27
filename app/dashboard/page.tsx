@@ -88,27 +88,28 @@ export default function Dashboard() {
   const filtered = payments.filter((p) => filter === 'all' || p.status === filter)
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-10 space-y-10">
+  return (
+    <div className="max-w-6xl mx-auto px-8 py-12 space-y-12">
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         <button
           onClick={seed}
           disabled={seeding}
-          className="border border-gray-200 rounded-xl px-5 py-2.5 text-sm font-medium hover:bg-gray-50"
+          className="border border-gray-200 rounded-xl px-6 py-3 text-base font-medium hover:bg-gray-50 transition-colors shadow-sm"
         >
           {seeding ? 'Loading...' : 'Load Sample Payments'}
         </button>
         <button
           onClick={runBatch}
           disabled={loading || payments.filter((p) => p.status === 'pending').length === 0}
-          className="bg-indigo-600 text-white rounded-xl px-5 py-2.5 text-sm font-medium disabled:opacity-40"
+          className="bg-indigo-600 text-white rounded-xl px-6 py-3 text-base font-medium disabled:opacity-40 hover:bg-indigo-700 transition-colors shadow-sm"
         >
           {loading ? 'Running recovery...' : 'Run Recovery Batch'}
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         <StatCard label="Total at risk" value={`₹${totalAtRisk.toLocaleString()}`} />
         <StatCard label="Recovered" value={`₹${totalRecovered.toLocaleString()}`} />
         <StatCard label="Recovery rate" value={`${recoveryRate}%`} />
@@ -117,13 +118,13 @@ export default function Dashboard() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-6 border-b border-gray-100 pb-3">
+      <div className="flex gap-8 border-b border-gray-100 pb-3.5">
         {['all', 'pending', 'recovered', 'escalated', 'stopped'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`text-sm capitalize pb-2 border-b-2 -mb-3 ${
-              filter === f ? 'border-indigo-600 text-indigo-600 font-medium' : 'border-transparent text-gray-400'
+            className={`text-base capitalize pb-2.5 border-b-2 -mb-4 transition-colors ${
+              filter === f ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
             {f}
@@ -132,14 +133,14 @@ export default function Dashboard() {
       </div>
 
       {/* Table */}
-      <table className="w-full text-sm">
+      <table className="w-full text-base">
         <thead>
-          <tr className="text-gray-500 text-xs uppercase tracking-wide">
-            <th className="text-left py-2 font-medium">Customer</th>
-            <th className="text-left py-2 font-medium">Amount</th>
-            <th className="text-left py-2 font-medium">Reason</th>
-            <th className="text-left py-2 font-medium">Attempts</th>
-            <th className="text-left py-2 font-medium">Status</th>
+          <tr className="text-gray-500 text-sm uppercase tracking-wide">
+            <th className="text-left py-3 font-medium">Customer</th>
+            <th className="text-left py-3 font-medium">Amount</th>
+            <th className="text-left py-3 font-medium">Reason</th>
+            <th className="text-left py-3 font-medium">Attempts</th>
+            <th className="text-left py-3 font-medium">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -147,19 +148,19 @@ export default function Dashboard() {
             <tr
               key={p.id}
               onClick={() => openDetail(p)}
-              className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+              className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
             >
-              <td className="py-4">
-                <div className="font-medium">{p.customer_name}</div>
-                <div className="text-gray-400 text-xs">{p.customer_email}</div>
+              <td className="py-5">
+                <div className="font-medium text-gray-900">{p.customer_name}</div>
+                <div className="text-gray-400 text-sm">{p.customer_email}</div>
               </td>
-              <td className="py-4">₹{Number(p.amount).toLocaleString()}</td>
-              <td className="py-4 text-gray-500">{p.failure_reason.replace(/_/g, ' ')}</td>
-              <td className="py-4 text-gray-500">{p.attempt_count}</td>
-              <td className="py-4">
+              <td className="py-5 font-medium text-gray-900">₹{Number(p.amount).toLocaleString()}</td>
+              <td className="py-5 text-gray-500 capitalize">{p.failure_reason.replace(/_/g, ' ')}</td>
+              <td className="py-5 text-gray-500">{p.attempt_count}</td>
+              <td className="py-5">
                 <StatusPill status={p.status} />
                 {p.status === 'pending' && p.next_retry_at && (
-                  <p className="text-[11px] text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1.5">
                     Retry scheduled: {new Date(p.next_retry_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                   </p>
                 )}
@@ -170,38 +171,38 @@ export default function Dashboard() {
       </table>
 
       {filtered.length === 0 && (
-        <p className="text-center text-gray-400 py-16 text-sm">No records yet — load sample payments to begin.</p>
+        <p className="text-center text-gray-400 py-20 text-base">No records yet — load sample payments to begin.</p>
       )}
 
       {/* Detail modal */}
       {selected && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center p-6 z-50" onClick={() => setSelected(null)}>
           <div
-            className="bg-white rounded-2xl shadow-lg max-w-lg w-full p-8 space-y-4 max-h-[80vh] overflow-y-auto"
+            className="bg-white rounded-2xl shadow-xl max-w-xl w-full p-8 space-y-6 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="font-semibold text-lg">{selected.customer_name}</h2>
-                <p className="text-gray-400 text-sm">₹{Number(selected.amount).toLocaleString()} · {selected.failure_reason.replace(/_/g, ' ')}</p>
+                <h2 className="font-semibold text-xl text-gray-900">{selected.customer_name}</h2>
+                <p className="text-gray-500 text-base mt-0.5">₹{Number(selected.amount).toLocaleString()} · {selected.failure_reason.replace(/_/g, ' ')}</p>
               </div>
               <StatusPill status={selected.status} />
             </div>
 
-            <div className="space-y-3 pt-2">
-              <p className="text-xs uppercase tracking-wide text-gray-400 font-medium">Audit trail</p>
+            <div className="space-y-4 pt-2">
+              <p className="text-sm uppercase tracking-wide text-gray-400 font-medium">Audit trail</p>
               {logs.map((log) => (
-                <div key={log.id} className="border-l-2 border-gray-100 pl-4 py-1">
-                  <p className="text-xs text-gray-400">{new Date(log.created_at).toLocaleString()}</p>
-                  <p className="text-sm font-medium capitalize">{log.step}{log.action_taken ? ` → ${log.action_taken.replace(/_/g, ' ')}` : ''}</p>
-                  {log.ai_reasoning && <p className="text-sm text-gray-500 mt-0.5">{log.ai_reasoning}</p>}
-                  {log.outcome && <p className="text-xs text-gray-400 mt-0.5">outcome: {log.outcome}</p>}
+                <div key={log.id} className="border-l-2 border-gray-100 pl-4 py-1.5">
+                  <p className="text-sm text-gray-400">{new Date(log.created_at).toLocaleString()}</p>
+                  <p className="text-base font-medium capitalize text-gray-900 mt-0.5">{log.step}{log.action_taken ? ` → ${log.action_taken.replace(/_/g, ' ')}` : ''}</p>
+                  {log.ai_reasoning && <p className="text-base text-gray-600 mt-1">{log.ai_reasoning}</p>}
+                  {log.outcome && <p className="text-sm text-gray-400 mt-1">outcome: {log.outcome}</p>}
                 </div>
               ))}
-              {logs.length === 0 && <p className="text-sm text-gray-400">No actions taken yet.</p>}
+              {logs.length === 0 && <p className="text-base text-gray-400">No actions taken yet.</p>}
             </div>
 
-            <button onClick={() => setSelected(null)} className="text-sm text-gray-500 pt-2">
+            <button onClick={() => setSelected(null)} className="text-base font-medium text-gray-500 hover:text-gray-900 pt-2">
               Close
             </button>
           </div>
@@ -213,9 +214,9 @@ export default function Dashboard() {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white shadow-sm rounded-2xl p-6">
-      <p className="text-3xl font-bold">{value}</p>
-      <p className="text-xs uppercase tracking-wide text-gray-500 mt-1">{label}</p>
+    <div className="bg-white shadow-sm rounded-2xl p-7 border border-gray-100/80">
+      <p className="text-4xl font-bold text-gray-900 tracking-tight">{value}</p>
+      <p className="text-sm uppercase tracking-wide text-gray-500 mt-2 font-medium">{label}</p>
     </div>
   )
 }
@@ -231,8 +232,8 @@ function StatusPill({ status }: { status: string }) {
   const Icon = c.icon
 
   return (
-    <span className={`inline-flex items-center gap-1.5 ${c.bg} ${c.text} text-xs font-medium px-3 py-1.5 rounded-full`}>
-      <Icon className="w-3.5 h-3.5" />
+    <span className={`inline-flex items-center gap-1.5 ${c.bg} ${c.text} text-sm font-medium px-3.5 py-1.5 rounded-full`}>
+      <Icon className="w-4 h-4" />
       {c.label}
     </span>
   )
